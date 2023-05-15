@@ -1,7 +1,5 @@
 # Starter pipeline
-- task: AddTag@0
-  inputs:
-    tags: 'mohab'
+
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
@@ -16,7 +14,42 @@ steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 
+- task: NodeTaskRunnerInstaller@0
+  inputs:
+    nodeVersion: '6' 
+
+- script: |
+   npm install
+  displayName: 'Install Dependencies'
+
+- script: |
+   export NODE_OPTIONS=--openssl-legacy-provider
+   npm run build
+  displayName: 'Build the Project'  
+   
+
 - script: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+- task: CopyFiles@2
+  displayName: 'Copy Files'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/build'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    
+- task: ArchiveFiles@2
+  displayName: 'Archive Files'
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: staticreactwebsite'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'staticreactwebsite'
